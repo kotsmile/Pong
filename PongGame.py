@@ -6,7 +6,6 @@ import pygame
 WIDTH = 800
 HEIGHT = 600
 
-HI = 'lopppppppp'
 
 V = namedtuple('Coordinates', ['x', 'y'])
 
