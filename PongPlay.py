@@ -8,30 +8,35 @@ FPS = 1000
 
 def play():
 
-    game = PongGame.PongGame(graphic=True)
+    game = PongGame.PongGame()
+    game.new(g=True)
     game.FPS = 20
     pygame.key.set_repeat(1, 20)
 
-    while game.running:
+    while True:
 
-        action1 = PongGame.Action.NONE
-        action2 = 0
-        for event in pygame.event.get():
+        while game.running:
 
-            if event.type == QUIT:
-                pygame.quit()
-                sys.exit()
+            action1 = PongGame.ACTION_NONE
+            action2 = 0
+            for event in pygame.event.get():
 
-            elif event.type == KEYDOWN:
-                if event.key == K_w:
-                    action1 = PongGame.Action.UP
-                if event.key == K_s:
-                    action1 = PongGame.Action.DOWN
-                if event.key == K_UP:
-                    action2 = PongGame.Action.UP
-                if event.key == K_DOWN:
-                    action2 = PongGame.Action.DOWN
+                if event.type == QUIT:
+                    pygame.quit()
+                    sys.exit()
 
-        game.next(action1, action2)
+                elif event.type == KEYDOWN:
+                    if event.key == K_w:
+                        action1 = PongGame.ACTION_UP
+                    if event.key == K_s:
+                        action1 = PongGame.ACTION_DOWN
+                    if event.key == K_UP:
+                        action2 = PongGame.ACTION_UP
+                    if event.key == K_DOWN:
+                        action2 = PongGame.ACTION_DOWN
 
-    play()
+            game.next(action1, action2)
+
+        game.new(g=True)
+
+

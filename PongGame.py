@@ -1,181 +1,126 @@
-from enum import Enum
 import pygame
+from collections import namedtuple
+from pygame.locals import *
+
+
 
 pygame.init()
 
-X_MAX = 800
-Y_MAX = 600
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+RED = (255, 0, 0)
 
-FPS = 20
+WIDTH = 600
+HEIGHT = 400
 
+V = namedtuple('Coordinates', ['x', 'y'])
 
-class Side(Enum):
-    LEFT = (0, Y_MAX * 0.5)
-    RIGHT = (X_MAX, Y_MAX * 0.5)
+LEFT_SIDE = V(0, HEIGHT // 2)
+RIGHT_SIDE = V(WIDTH, HEIGHT // 2) #see position
 
-
-class Action(Enum):
-    NONE = 0
-    UP = 1
-    DOWN = 2
-
-
-class Color(Enum):
-    BLACK = (0, 0, 0)
-    WHITE = (255, 255, 255)
-    RED = (255, 0, 0)
+ACTION_NONE = 'none'
+ACTION_UP = 'up'
+ACTION_DOWN = 'down'
 
 
-def draw_rect(surf, color, x, y, a, b):
-    pygame.draw.rect(surf, color, [x, y, x + a, y + b])
+def draw_rect(surf, color, x1, y1, x2, y2):
+    r = pygame.Rect((x1, y1), ((x2-x1), (y2-y1)))
+    pygame.draw.rect(surf, color, r)
 
 
 class Player(object):
     PLAYER_VELOCITY = 10
-    PLAYER_X_MAX = 10
-    PLAYER_Y_MAX = 50
+    PLAYER_WIDTH = 10
+    PLAYER_HEIGHT = 50
 
     def __init__(self, side):
         self.side = side
-        self.x = self.side.value[0]
-        self.y = self.side.value[1]
-        self.velocity = 0
-        self.score = 0
+        self.x = self.side.x
+        self.y = self.side.y
         self.v = 0
+        self.score = 0
 
     def restart(self):
-        self.x = self.side.value[0]
-        self.y = self.side.value[1]
-        self.velocity = 0
-        self.score = 0
-        self.v = 0
+        pass
 
     def move(self, action):
-        if action == Action.UP and self.y > 0:
-            self.v = -self.PLAYER_VELOCITY
-            self.y -= self.PLAYER_VELOCITY
-        elif action == Action.DOWN and (self.y + self.PLAYER_Y_MAX) < X_MAX:
-            self.v = self.PLAYER_VELOCITY
-            self.y += self.PLAYER_VELOCITY
-        elif action == Action.NONE:
-            self.v = 0
+        pass
 
     def draw(self, surface):
-        if self.side == Side.RIGHT:
-            draw_rect(surface, Color.BLACK.value, self.x - self.PLAYER_X_MAX, self.y, self.PLAYER_X_MAX, self.PLAYER_Y_MAX)
-        else:
-            draw_rect(surface, Color.BLACK.value, self.x - self.PLAYER_X_MAX, self.y, self.PLAYER_X_MAX,
-                      self.PLAYER_Y_MAX)
+        if self.side == LEFT_SIDE:
+            draw_rect(surface, BLACK, self.x, self.y - self.PLAYER_HEIGHT // 2, self.x + self.PLAYER_WIDTH, self.y + self.PLAYER_HEIGHT // 2)
+        if self.side == RIGHT_SIDE:
+            draw_rect(surface, BLACK, self.x - self.PLAYER_WIDTH, self.y - self.PLAYER_HEIGHT // 2, self.x, self.y + self.PLAYER_HEIGHT // 2)
 
 
 class Ball(object):
-    BALL_X_VELOCITY = 10
-    BALL_X_MAX = 10
-    BALL_Y_MAX = 10
+    BALL_VELOCITY = 10
+    BALL_SIZE = 10
 
     def __init__(self):
-        self.x = X_MAX*0.5 - self.BALL_X_MAX*0.5
-        self.y = Y_MAX*0.5 - self.BALL_Y_MAX*0.5
-        self.v_x = self.BALL_X_VELOCITY
+        self.x = WIDTH*0.5 - self.BALL_SIZE
+        self.y = HEIGHT*0.5 - self.BALL_SIZE
+        self.v_x = self.BALL_VELOCITY
         self.v_y = 0
         self.goal = 0
 
     def restart(self):
-        self.x = X_MAX * 0.5 - self.BALL_X_MAX * 0.5
-        self.y = Y_MAX * 0.5 - self.BALL_Y_MAX * 0.5
-        self.v_x = self.BALL_X_VELOCITY
-        self.v_y = 0
-        self.goal = 0
+        self.__init__()
 
     def move(self):
-        self.x += self.v_x
-        self.y += self.v_y
-        if self.x <= 0:
-            self.goal = Side.LEFT
-        elif self.x >= X_MAX:
-            self.goal = Side.RIGHT
+        pass
 
-    def collide(self, players):
-        for p in players:
-            if p.side == Side.LEFT:
-                if (p.x + p.PLAYER_X_MAX) >= self.x and p.y <= self.y <= (p.y + p.PLAYER_Y_MAX):
-                    self.v_x *= -1
-                    self.v_y += p.v
-            elif p.side == Side.RIGHT:
-                if p.x <= (self.x + self.BALL_X_MAX) and p.y <= self.y <= (p.y + p.PLAYER_Y_MAX):
-                    self.v_x *= -1
-                    self.v_y += p.v
-        if self.y + self.BALL_Y_MAX >= X_MAX or self.y <= 0:
-            self.v_y *= -1
+    def collide(self, p1, p2):
+        pass
 
     def draw(self, surface):
-        draw_rect(surface, Color.RED.value, self.x, self.y, self.BALL_X_MAX, self.BALL_Y_MAX)
+        draw_rect(surface, RED, self.x, self.y, self.x + self.BALL_SIZE, self.y + self.BALL_SIZE)
 
 
 class PongGame(object):
 
-    def __init__(self, graphic=False):
-        self.graphic = graphic
-        self.player_left = Player(Side.LEFT)
-        self.player_right = Player(Side.RIGHT)
+    def __init__(self):
+        self.shape = [2, 6, 1]
+
+    def new(self, g=False):
+        self.player_left = Player(LEFT_SIDE)
+        self.player_right = Player(RIGHT_SIDE)
         self.ball = Ball()
-        self.running = True
         self.timer = 0
-        self.end_score = 11
+        self.running = True
+        self.g = g
+        if self.g:
+            self.g_init()
 
-        if graphic:
-            self.screen = pygame.display.set_mode((X_MAX, Y_MAX), 0, 32)
-            self.surface = pygame.Surface(self.screen.get_size())
-            self.surface = self.surface.convert()
-            self.surface.fill(Color.WHITE.value)
+    def g_init(self):
+        self.screen = pygame.display.set_mode((WIDTH, HEIGHT), 0, 32)
+        self.surface = pygame.Surface(self.screen.get_size())
+        self.surface = self.surface.convert()
+        self.surface.fill(WHITE)
 
-            self.screen.blit(self.surface, (0, 0))
-            self.FPS = FPS
-            self.fpsClock = pygame.time.Clock()
-            self.fpsClock.tick(self.FPS)
+        self.screen.blit(self.surface, (0, 0))
+        self.FPS = 20
+        self.fpsClock = pygame.time.Clock()
+        self.fpsClock.tick(self.FPS)
 
     def draw(self):
-        self.surface.fill(Color.WHITE.value)
-
+        self.surface.fill(WHITE)
         self.player_left.draw(self.surface)
         self.player_right.draw(self.surface)
         self.ball.draw(self.surface)
 
-        font = pygame.font.Font("fonts/opensans.ttf", 36)
-        text = font.render('{0} : {1}'.format(str(self.player_left.score), str(self.player_right.score)), 1, Color.BLACK.value)
-        textpos = text.get_rect()
-        textpos.centerx = 20
-        self.surface.blit(text, textpos)
-        self.screen.blit(self.surface, (X_MAX // 2, 0))
-
+        self.screen.blit(self.surface, (0, 0))
+        pygame.display.flip()
         pygame.display.update()
-        self.fpsClock.tick(self.FPS)
 
-    def next(self, action1, action2):
+    def next(self, a1, a2):
 
         self.timer += 1
-
-        self.player_left.move(action1)
-        self.player_right.move(action2)
+        self.player_right.move(a1)
+        self.player_left.move(a1)
         self.ball.move()
-        self.ball.collide([self.player_left, self.player_right])
+        self.ball.collide(self.player_left, self.player_right)
 
-        if self.ball.goal != 0:
-            if self.ball.goal == Side.LEFT:
-                self.player_left.score += 1
-            elif self.ball.goal == Side.RIGHT:
-                self.player_right.score += 1
-
-            self.player_right.restart()
-            self.player_left.restart()
-            self.ball.restart()
-
-        if self.player_left.score >= self.end_score or self.player_right.score >= self.end_score:
-            self.running = False
-
-        if self.graphic:
+        if self.g:
             self.draw()
-
-
-
 
