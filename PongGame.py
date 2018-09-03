@@ -26,9 +26,14 @@ class Color(Enum):
     RED = (255, 0, 0)
 
 
-def draw_box(surf, color, x1, y1, x2, y2):
+def draw_rect(surf, color, x1, y1, x2, y2):
     r = pygame.Rect((x1, y1), (x2, y2))
     pygame.draw.rect(surf, color, r)
+
+
+def draw_ellipse(surf, color, x, y, a, b):
+    r = pygame.Rect((x, y), (x + a, y + b))
+    pygame.draw.ellipse(surf, color, r)
 
 
 class Player(object):
@@ -55,7 +60,7 @@ class Player(object):
             self.v = 0
 
     def draw(self, surface):
-        draw_box(surface, Color.BLACK, self.x, self.y, self.x + self.PLAYER_WIDTH, self.y + self.PLAYER_HEIGHT)
+        draw_rect(surface, Color.BLACK, self.x, self.y, self.x + self.PLAYER_WIDTH, self.y + self.PLAYER_HEIGHT)
 
 
 class Ball(object):
@@ -85,3 +90,8 @@ class Ball(object):
                     self.v_y += p.v
         if self.y + self.BALL_HEIGHT >= WIDTH or self.y <= 0:
             self.v_y *= -1
+
+    def draw(self, surface):
+        draw_ellipse(surface, Color.RED, self.x, self.y, self.BALL_WIDTH, self.BALL_HEIGHT)
+
+
