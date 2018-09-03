@@ -15,8 +15,9 @@ HEIGHT = 400
 
 V = namedtuple('Coordinates', ['x', 'y'])
 
-LEFT_SIDE = V(0, HEIGHT // 2)
-RIGHT_SIDE = V(WIDTH, HEIGHT // 2) #see position
+PHEIGHT = 80
+LEFT_SIDE = V(0, HEIGHT // 2 - PHEIGHT // 2)
+RIGHT_SIDE = V(WIDTH, HEIGHT // 2 - PHEIGHT // 2) #see position
 
 ACTION_NONE = 'none'
 ACTION_UP = 'up'
@@ -31,7 +32,7 @@ def draw_rect(surf, color, x1, y1, x2, y2):
 class Player(object):
     PLAYER_VELOCITY = 10
     PLAYER_WIDTH = 10
-    PLAYER_HEIGHT = 50
+    PLAYER_HEIGHT = 100
 
     def __init__(self, side):
         self.side = side
@@ -41,25 +42,34 @@ class Player(object):
         self.score = 0
 
     def restart(self):
-        pass
+        score = self.score
+        self.__init__(self.side)
+        self.score = score
 
     def move(self, action):
-        pass
+        if action == ACTION_UP and self.y > 0:
+            self.v = -self.PLAYER_VELOCITY
+            self.y -= self.PLAYER_VELOCITY
+        elif action == ACTION_DOWN and (self.y + self.PLAYER_HEIGHT) < HEIGHT:
+            self.v = self.PLAYER_VELOCITY
+            self.y += self.PLAYER_VELOCITY
+        elif action == ACTION_NONE:
+            self.v = 0
 
     def draw(self, surface):
         if self.side == LEFT_SIDE:
-            draw_rect(surface, BLACK, self.x, self.y - self.PLAYER_HEIGHT // 2, self.x + self.PLAYER_WIDTH, self.y + self.PLAYER_HEIGHT // 2)
+            draw_rect(surface, BLACK, self.x, self.y, self.x + self.PLAYER_WIDTH, self.y + self.PLAYER_HEIGHT)
         if self.side == RIGHT_SIDE:
-            draw_rect(surface, BLACK, self.x - self.PLAYER_WIDTH, self.y - self.PLAYER_HEIGHT // 2, self.x, self.y + self.PLAYER_HEIGHT // 2)
+            draw_rect(surface, BLACK, self.x - self.PLAYER_WIDTH, self.y, self.x, self.y + self.PLAYER_HEIGHT)
 
 
 class Ball(object):
-    BALL_VELOCITY = 10
+    BALL_VELOCITY = 5
     BALL_SIZE = 10
 
     def __init__(self):
-        self.x = WIDTH*0.5 - self.BALL_SIZE
-        self.y = HEIGHT*0.5 - self.BALL_SIZE
+        self.x = WIDTH*0.5 - self.BALL_SIZE // 2
+        self.y = HEIGHT*0.5 - self.BALL_SIZE // 2
         self.v_x = self.BALL_VELOCITY
         self.v_y = 0
         self.goal = 0
@@ -68,10 +78,26 @@ class Ball(object):
         self.__init__()
 
     def move(self):
-        pass
+        self.x += self.v_x
+        self.y += self.v_y
+        if self.x <= 0:
+            self.goal = LEFT_SIDE
+        elif self.x + self.BALL_SIZE >= WIDTH:
+            self.goal = RIGHT_SIDE
 
-    def collide(self, p1, p2):
-        pass
+    def collide(self, *players):
+        for p in players:
+            if p.side == LEFT_SIDE:
+                if (p.x + p.PLAYER_WIDTH) >= self.x and (p.y + p.PLAYER_HEIGHT) > self.y > (p.y - self.BALL_SIZE):
+                    self.v_x *= -1
+                    self.v_y += p.v
+            elif p.side == RIGHT_SIDE:
+                if p.x - p.PLAYER_WIDTH <= (self.x + self.BALL_SIZE) and (p.y + p.PLAYER_HEIGHT) > self.y > (p.y - self.BALL_SIZE):
+                    self.v_x *= -1
+                    self.v_y += p.v
+
+        if self.y + self.BALL_SIZE >= HEIGHT or self.y <= 0:
+            self.v_y *= -1
 
     def draw(self, surface):
         draw_rect(surface, RED, self.x, self.y, self.x + self.BALL_SIZE, self.y + self.BALL_SIZE)
@@ -88,6 +114,7 @@ class PongGame(object):
         self.ball = Ball()
         self.timer = 0
         self.running = True
+        self.end_score = 11
         self.g = g
         if self.g:
             self.g_init()
@@ -109,18 +136,40 @@ class PongGame(object):
         self.player_right.draw(self.surface)
         self.ball.draw(self.surface)
 
+        font = pygame.font.Font("fonts/opensans.ttf", 36)
+        text = font.render('{0} : {1}'.format(str(self.player_left.score), str(self.player_right.score)), 1,
+                           BLACK)
+        textpos = text.get_rect()
+        self.surface.blit(text, textpos)
+
         self.screen.blit(self.surface, (0, 0))
         pygame.display.flip()
         pygame.display.update()
 
     def next(self, a1, a2):
 
-        self.timer += 1
-        self.player_right.move(a1)
-        self.player_left.move(a1)
-        self.ball.move()
-        self.ball.collide(self.player_left, self.player_right)
-
         if self.g:
             self.draw()
+
+        self.timer += 1
+        self.ball.collide(self.player_left, self.player_right)
+        self.player_left.move(a1)
+        self.player_right.move(a2)
+        self.ball.move()
+
+
+        if self.ball.goal != 0:
+            if self.ball.goal == LEFT_SIDE:
+                self.player_left.score += 1
+            elif self.ball.goal == RIGHT_SIDE:
+                self.player_right.score += 1
+
+            if self.player_left.score >= self.end_score or self.player_right.score >= self.end_score:
+                self.running = False
+
+            self.player_right.restart()
+            self.player_left.restart()
+            self.ball.restart()
+
+
 
