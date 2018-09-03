@@ -2,6 +2,7 @@ import PongPlay
 
 
 def core():
+    PongPlay.play()
     while True:
         request = input().split(' ')
         try:

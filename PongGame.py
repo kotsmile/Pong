@@ -1,6 +1,8 @@
 from enum import Enum
 import pygame
 
+pygame.init()
+
 X_MAX = 800
 Y_MAX = 600
 
@@ -25,8 +27,7 @@ class Color(Enum):
 
 
 def draw_rect(surf, color, x, y, a, b):
-    r = pygame.Rect((x, y), (a, b))
-    pygame.draw.rect(surf, color, r)
+    pygame.draw.rect(surf, color, [x, y, x + a, y + b])
 
 
 class Player(object):
@@ -97,11 +98,11 @@ class Ball(object):
     def collide(self, players):
         for p in players:
             if p.side == Side.LEFT:
-                if (p.x + p.PLAYER_X_MAX) >= self.x and :
+                if (p.x + p.PLAYER_X_MAX) >= self.x and p.y <= self.y <= (p.y + p.PLAYER_Y_MAX):
                     self.v_x *= -1
                     self.v_y += p.v
             elif p.side == Side.RIGHT:
-                if p.x <= (self.x + self.BALL_X_MAX):
+                if p.x <= (self.x + self.BALL_X_MAX) and p.y <= self.y <= (p.y + p.PLAYER_Y_MAX):
                     self.v_x *= -1
                     self.v_y += p.v
         if self.y + self.BALL_Y_MAX >= X_MAX or self.y <= 0:
@@ -114,8 +115,6 @@ class Ball(object):
 class PongGame(object):
 
     def __init__(self, graphic=False):
-        pygame.init()
-
         self.graphic = graphic
         self.player_left = Player(Side.LEFT)
         self.player_right = Player(Side.RIGHT)
@@ -149,9 +148,8 @@ class PongGame(object):
         self.surface.blit(text, textpos)
         self.screen.blit(self.surface, (X_MAX // 2, 0))
 
-        pygame.display.flip()
         pygame.display.update()
-        # self.fpsClock.tick(self.FPS + self.score / 2)
+        self.fpsClock.tick(self.FPS)
 
     def next(self, action1, action2):
 
