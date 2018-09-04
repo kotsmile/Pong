@@ -61,7 +61,7 @@ class Player(object):
 
 
 class Ball(object):
-    BALL_VELOCITY = 3
+    BALL_VELOCITY = 5
     BALL_SIZE = 10
 
     def __init__(self, side):
@@ -91,11 +91,11 @@ class Ball(object):
             if p.side == LEFT_SIDE:
                 if (p.x + p.PLAYER_WIDTH) >= self.x and (p.y + p.PLAYER_HEIGHT) > self.y > (p.y - self.BALL_SIZE):
                     self.v_x *= -1
-                    self.v_y += p.v
+                    self.v_y += p.v // 2
             elif p.side == RIGHT_SIDE:
                 if p.x - p.PLAYER_WIDTH <= (self.x + self.BALL_SIZE) and (p.y + p.PLAYER_HEIGHT) > self.y > (p.y - self.BALL_SIZE):
                     self.v_x *= -1
-                    self.v_y += p.v
+                    self.v_y += p.v // 2
 
         if self.y + self.BALL_SIZE >= HEIGHT or self.y <= 0:
             self.v_y *= -1

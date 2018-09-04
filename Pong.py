@@ -3,7 +3,7 @@ import PongPlay
 
 def core():
     while True:
-        request = input('>').split(' ')
+        request = input('> ').split(' ')
         try:
             if request[0] == 'play':
                 PongPlay.play()
