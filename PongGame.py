@@ -67,15 +67,19 @@ class Ball(object):
     BALL_VELOCITY = 5
     BALL_SIZE = 10
 
-    def __init__(self):
+    def __init__(self, side):
+        self.side = side
         self.x = WIDTH*0.5 - self.BALL_SIZE // 2
         self.y = HEIGHT*0.5 - self.BALL_SIZE // 2
-        self.v_x = self.BALL_VELOCITY
+        if self.side == RIGHT_SIDE:
+            self.v_x = -self.BALL_VELOCITY
+        elif self.side == LEFT_SIDE:
+            self.v_x = self.BALL_VELOCITY
         self.v_y = 0
         self.goal = 0
 
     def restart(self):
-        self.__init__()
+        self.__init__(self.goal)
 
     def move(self):
         self.x += self.v_x
@@ -111,7 +115,7 @@ class PongGame(object):
     def new(self, g=False):
         self.player_left = Player(LEFT_SIDE)
         self.player_right = Player(RIGHT_SIDE)
-        self.ball = Ball()
+        self.ball = Ball(LEFT_SIDE)
         self.timer = 0
         self.running = True
         self.end_score = 11
@@ -137,7 +141,7 @@ class PongGame(object):
         self.ball.draw(self.surface)
 
         font = pygame.font.Font("fonts/opensans.ttf", 36)
-        text = font.render('{0} : {1}'.format(str(self.player_left.score), str(self.player_right.score)), 1,
+        text = font.render('{1} : {0}'.format(str(self.player_left.score), str(self.player_right.score)), 1,
                            BLACK)
         textpos = text.get_rect()
         self.surface.blit(text, textpos)
