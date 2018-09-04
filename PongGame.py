@@ -1,8 +1,5 @@
 import pygame
 from collections import namedtuple
-from pygame.locals import *
-
-
 
 pygame.init()
 
@@ -64,7 +61,7 @@ class Player(object):
 
 
 class Ball(object):
-    BALL_VELOCITY = 5
+    BALL_VELOCITY = 3
     BALL_SIZE = 10
 
     def __init__(self, side):
@@ -160,7 +157,6 @@ class PongGame(object):
         self.player_left.move(a1)
         self.player_right.move(a2)
         self.ball.move()
-
 
         if self.ball.goal != 0:
             if self.ball.goal == LEFT_SIDE:
