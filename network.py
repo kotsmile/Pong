@@ -21,4 +21,6 @@ class NeuralNetwork(object):
         return inputs.T.tolist()[0]
 
 
+print(NeuralNetwork([5, 6, 7]).weights, 'sfgsdg', NeuralNetwork([5, 6, 7]).biases)
+
 

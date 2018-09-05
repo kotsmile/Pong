@@ -1,14 +1,13 @@
+from commands import commands
 
 
 def core():
     while True:
         request = input('> ').split(' ')
         try:
-            if request[0] == 'play':
-                import pong_play
-                pong_play.play()
-            else:
-                print('Can\'t recognize request.')
+            for c in commands:
+                if c.check(request):
+                    break
         except IndexError:
             print('Incorrect request. Please try again.')
 
