@@ -1,3 +1,6 @@
+import numpy as np
+
+
 def crypt(n):
     if n < 0:
         return '1' + bin(int(n * 10 ** 10))[3:]

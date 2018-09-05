@@ -1,4 +1,3 @@
-import PongPlay
 
 
 def core():
@@ -6,7 +5,8 @@ def core():
         request = input('> ').split(' ')
         try:
             if request[0] == 'play':
-                PongPlay.play()
+                import pong_play
+                pong_play.play()
             else:
                 print('Can\'t recognize request.')
         except IndexError:
