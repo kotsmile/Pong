@@ -1,5 +1,19 @@
 import pygame
 from collections import namedtuple
+import time
+
+
+def crypt(n):
+    if n < 0:
+        return '1' + bin(int(n * 10 ** 10))[3:]
+    return '0' + bin(int(n * 10 ** 10))[2:]
+
+
+def decrypt(a):
+    if a[0] == '1':
+        return -float(int(a[1:], 2)) / 10 ** 10
+    return float(int(a[1:], 2)) / 10 ** 10
+
 
 pygame.init()
 
@@ -14,7 +28,7 @@ V = namedtuple('Coordinates', ['x', 'y'])
 
 PHEIGHT = 80
 LEFT_SIDE = V(0, HEIGHT // 2 - PHEIGHT // 2)
-RIGHT_SIDE = V(WIDTH, HEIGHT // 2 - PHEIGHT // 2) #see position
+RIGHT_SIDE = V(WIDTH, HEIGHT // 2 - PHEIGHT // 2)  # see position
 
 ACTION_NONE = 'none'
 ACTION_UP = 'up'
@@ -22,8 +36,13 @@ ACTION_DOWN = 'down'
 
 
 def draw_rect(surf, color, x1, y1, x2, y2):
-    r = pygame.Rect((x1, y1), ((x2-x1), (y2-y1)))
+    r = pygame.Rect((x1, y1), ((x2 - x1), (y2 - y1)))
     pygame.draw.rect(surf, color, r)
+
+
+def draw_ellipse(surf, color, x1, y1, x2, y2):
+    r = pygame.Rect((x1, y1), ((x2 - x1), (y2 - y1)))
+    pygame.draw.ellipse(surf, color, r)
 
 
 class Player(object):
@@ -62,12 +81,12 @@ class Player(object):
 
 class Ball(object):
     BALL_VELOCITY = 5
-    BALL_SIZE = 10
+    BALL_SIZE = 15
 
     def __init__(self, side):
         self.side = side
-        self.x = WIDTH*0.5 - self.BALL_SIZE // 2
-        self.y = HEIGHT*0.5 - self.BALL_SIZE // 2
+        self.x = WIDTH * 0.5 - self.BALL_SIZE // 2
+        self.y = HEIGHT * 0.5 - self.BALL_SIZE // 2
         if self.side == RIGHT_SIDE:
             self.v_x = -self.BALL_VELOCITY
         elif self.side == LEFT_SIDE:
@@ -81,9 +100,9 @@ class Ball(object):
     def move(self):
         self.x += self.v_x
         self.y += self.v_y
-        if self.x <= 0:
+        if self.x <= -2 * self.BALL_SIZE:
             self.goal = LEFT_SIDE
-        elif self.x + self.BALL_SIZE >= WIDTH:
+        elif self.x >= WIDTH + self.BALL_SIZE:
             self.goal = RIGHT_SIDE
 
     def collide(self, *players):
@@ -93,7 +112,8 @@ class Ball(object):
                     self.v_x *= -1
                     self.v_y += p.v // 2
             elif p.side == RIGHT_SIDE:
-                if p.x - p.PLAYER_WIDTH <= (self.x + self.BALL_SIZE) and (p.y + p.PLAYER_HEIGHT) > self.y > (p.y - self.BALL_SIZE):
+                if p.x - p.PLAYER_WIDTH <= (self.x + self.BALL_SIZE) and (p.y + p.PLAYER_HEIGHT) > self.y > (
+                        p.y - self.BALL_SIZE):
                     self.v_x *= -1
                     self.v_y += p.v // 2
 
@@ -101,7 +121,7 @@ class Ball(object):
             self.v_y *= -1
 
     def draw(self, surface):
-        draw_rect(surface, RED, self.x, self.y, self.x + self.BALL_SIZE, self.y + self.BALL_SIZE)
+        draw_ellipse(surface, RED, self.x, self.y, self.x + self.BALL_SIZE, self.y + self.BALL_SIZE)
 
 
 class PongGame(object):
@@ -159,6 +179,9 @@ class PongGame(object):
         self.ball.move()
 
         if self.ball.goal != 0:
+            if self.g:
+                time.sleep(0.5)
+
             if self.ball.goal == LEFT_SIDE:
                 self.player_left.score += 1
             elif self.ball.goal == RIGHT_SIDE:
@@ -170,6 +193,3 @@ class PongGame(object):
             self.player_right.restart()
             self.player_left.restart()
             self.ball.restart()
-
-
-
