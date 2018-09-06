@@ -1,5 +1,6 @@
 import pong_play
-
+import genetic
+import pong_game
 
 class Command(object):
 
@@ -27,6 +28,6 @@ def l_c():
 commands = []
 
 commands.append(Command('play', 'Start the Pong for two players', lambda: pong_play.play()))
-
+commands.append(Command('genetic', 'Start genetic algorithm', lambda: genetic.Population(20, pong_game.PongGame(), 10000, [3, 20, 3], graph=True)))
 commands.append(Command('list', 'Show list of commands', l_c))
 commands.append(Command('', '', lambda: print('Can\'t recognize request'), ignore=True))

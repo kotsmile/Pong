@@ -114,7 +114,7 @@ class Ball(object):
 class PongGame(object):
 
     def __init__(self):
-        self.shape = [2, 6, 1]
+        self.shape = [3, 20, 3]
 
     def new(self, g=False):
         self.player_left = Player(LEFT_SIDE)
@@ -122,7 +122,7 @@ class PongGame(object):
         self.ball = Ball(LEFT_SIDE)
         self.timer = 0
         self.running = True
-        self.end_score = 11
+        self.end_score = 7
         self.g = g
         if self.g:
             self.g_init()
@@ -180,3 +180,14 @@ class PongGame(object):
             self.player_right.restart()
             self.player_left.restart()
             self.ball.restart()
+
+    def get_data(self, side):
+        data = []
+        if side == LEFT_SIDE:
+            data = [abs(self.ball.x - self.player_left.x), abs(self.ball.y - self.player_left.y),
+                    abs(self.player_left.y - self.player_right.y)]
+        elif side == RIGHT_SIDE:
+            data = [abs(self.ball.x - self.player_right.x), abs(self.ball.y - self.player_right.y),
+                    abs(self.player_left.y - self.player_right.y)]
+
+        return data
