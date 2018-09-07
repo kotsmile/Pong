@@ -2,6 +2,7 @@ import pong_play
 import genetic
 import pong_game
 
+
 class Command(object):
 
     def __init__(self, call, description, execute, ignore=False):
@@ -20,14 +21,12 @@ class Command(object):
         return False
 
 
-def l_c():
-    for i in commands:
-        print(i.call + '\t' + i.description)
-
-
 commands = []
 
 commands.append(Command('play', 'Start the Pong for two players', lambda: pong_play.play()))
-commands.append(Command('genetic', 'Start genetic algorithm', lambda: genetic.Population(20, pong_game.PongGame(), 10000, [3, 20, 3], graph=True)))
-commands.append(Command('list', 'Show list of commands', l_c))
+commands.append(Command('genetic', 'Start genetic algorithm',
+                        lambda: genetic.Population(70, pong_game.PongGame(), 100000000, [2, 10, 3], mutate_rate=0.15, graph=True)))
+
+commands.append(Command('list', 'Show list of commands',
+                        lambda: [print(i.call + '\t' + i.description) for i in commands]))
 commands.append(Command('', '', lambda: print('Can\'t recognize request'), ignore=True))

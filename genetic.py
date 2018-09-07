@@ -1,10 +1,35 @@
 import network
 import random
 import pong_game
+import pygame
+import pong_play
+from pygame.locals import *
 
 BASE = 10
 BOLD = '\033[1m'
 END = '\033[0m'
+
+GAME = pong_game.PongGame()
+
+
+def demo(b1, b2, once=False):
+    GAME.new(g=True)
+
+    while GAME.running:
+
+        a1 = b1.ask(GAME.get_data(pong_game.LEFT_SIDE))
+        a2 = b2.ask(GAME.get_data(pong_game.RIGHT_SIDE))
+        GAME.next(a1, a2)
+        for event in pygame.event.get():
+
+            if event.type == QUIT:
+                return
+
+            else:
+                pass
+
+    if not once:
+        demo(b1, b2, once=False)
 
 
 def crypt(n):
@@ -46,7 +71,6 @@ class Brain(object):
             else:
                 new_dna += n
         self.set_dna(new_dna)
-        return self
 
     def child(self, another_brain):
         baby = Brain(self.nn)
@@ -90,7 +114,7 @@ class Brain(object):
 
 class Population(object):
 
-    def __init__(self, size, game, goal, shape, mutate_rate=0.01, graph=False):
+    def __init__(self, size, game, goal, shape, mutate_rate=0.05, graph=False):
 
         self.graph = graph
         self.size = size
@@ -104,25 +128,10 @@ class Population(object):
         self.goal = goal
         self.learn()
 
-    def demo(self, brain1, brain2, once=False):
-        if once:
-            self.game.new(g=True)
-            while self.game.running:
-                data_left = self.game.get_data(pong_game.LEFT_SIDE)
-                data_right = self.game.get_data(pong_game.RIGHT_SIDE)
-                self.game.next(brain1.ask(data_left), brain2.ask(data_right))
-        else:
-            while True:
-                self.game.new(g=True)
-                while self.game.running:
-                    data_left = self.game.get_data(pong_game.LEFT_SIDE)
-                    data_right = self.game.get_data(pong_game.RIGHT_SIDE)
-                    self.game.next(brain1.ask(data_left), brain2.ask(data_right))
-
     def learn(self):
 
         while self.best_fitness <= self.goal:
-
+            i = 0
             for b1, b2 in zip(self.brains, self.brains[::-1]):
 
                 self.game.new()
@@ -134,31 +143,36 @@ class Population(object):
                     data_right = self.game.get_data(pong_game.RIGHT_SIDE)
                     self.game.next(b1.ask(data_left), b2.ask(data_right))
                     j += 1
-                    if j > 100000:
+                    if j > 50000:
                         self.game.running = False
 
-                b1.fitness = self.game.timer*self.game.player_left.score
-                b2.fitness = self.game.timer*self.game.player_right.score
+                b1.fitness = ((self.game.player_left.score**2-self.game.player_right.score)**2)*self.game.player_left.knock
+                b2.fitness = ((self.game.player_left.score-self.game.player_right.score**2)**2)*self.game.player_right.knock
+                i += 1
+                #print(i)
 
-            best_brain = None
-            self.next_generation()
+            self.brains.sort(key=lambda a: a.fitness, reverse=True)
+            print('demo')
             if self.graph:
-                for b in self.brains:
-                    if b.fitness == self.best_fitness:
-                        best_brain = b
-                        break
-                self.demo(best_brain, best_brain, once=True)
+                demo(self.brains[0], self.brains[1], once=True)
+
+            if self.generation > 5:
+                break
+            self.next_generation()
 
         print(BOLD + 'DONE!!!' + END)
 
-        best_brain = None
+        self.brains.sort(key=lambda a: a.fitness, reverse=True)
 
-        for b in self.brains:
-            if b.fitness == self.best_fitness:
-                best_brain = b
-                break
+        pong_play.play_vs_computer(self.brains[0])
+        answer = input('Save this brain?[y/n]')
+        if answer == 'y':
+            name = input('Please write name')
+            with open(name + '.txt', 'w') as f:
+                f.write(self.brains[0].get_dna())
 
-        self.demo(best_brain, best_brain)
+
+        #demo(self.brains[0], self.brains[1])
 
     def next_generation(self):
 
@@ -168,15 +182,16 @@ class Population(object):
         self.delta = max(fitness_g) - self.best_fitness
         self.best_fitness = max(fitness_g)
 
-        for b in self.brains:
-            if b.fitness == self.best_fitness:
-                self.best_brain = b
+        self.brains.sort(key=lambda a: a.fitness, reverse=True)
+        self.best_brain = self.brains[0]
 
         self.sum_of_fitness = sum(fitness_g)
 
         self.fitnesses.append(self.best_fitness)
 
-        new_brains = [self.find_parent().child(self.find_parent()).mutate(self.mutate_rate) for _ in range(self.size)]
+        new_brains = [self.find_parent().child(self.find_parent()) for _ in range(self.size)]
+        for b in new_brains:
+            b.mutate(self.mutate_rate)
 
         self.brains = new_brains
         self.info()
@@ -184,17 +199,14 @@ class Population(object):
     def find_parent(self):
 
         pick = self.sum_of_fitness * random.random()
-        self.sum_of_fitness = 0
+        sum_of_fitness = 0
 
         for b in self.brains:
 
-            self.sum_of_fitness += b.fitness
+            sum_of_fitness += b.fitness
 
-            if self.sum_of_fitness >= pick:
+            if sum_of_fitness >= pick:
                 return b
-
-
-
 
     def info(self):
         print('\n')

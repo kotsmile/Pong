@@ -38,6 +38,7 @@ class Player(object):
     PLAYER_HEIGHT = 100
 
     def __init__(self, side):
+        self.knock = 0
         self.side = side
         self.x = self.side.x
         self.y = self.side.y
@@ -45,9 +46,11 @@ class Player(object):
         self.score = 0
 
     def restart(self):
+        knock = self.knock
         score = self.score
         self.__init__(self.side)
         self.score = score
+        self.knock = knock
 
     def move(self, action):
         if action == ACTION_UP and self.y > 0:
@@ -75,9 +78,9 @@ class Ball(object):
         self.x = WIDTH * 0.5 - self.BALL_SIZE // 2
         self.y = HEIGHT * 0.5 - self.BALL_SIZE // 2
         if self.side == RIGHT_SIDE:
-            self.v_x = -self.BALL_VELOCITY
-        elif self.side == LEFT_SIDE:
             self.v_x = self.BALL_VELOCITY
+        elif self.side == LEFT_SIDE:
+            self.v_x = -self.BALL_VELOCITY
         self.v_y = 0
         self.goal = 0
 
@@ -96,11 +99,13 @@ class Ball(object):
         for p in players:
             if p.side == LEFT_SIDE:
                 if (p.x + p.PLAYER_WIDTH) >= self.x and (p.y + p.PLAYER_HEIGHT) > self.y > (p.y - self.BALL_SIZE):
+                    p.knock += 1
                     self.v_x *= -1
                     self.v_y += p.v // 2
             elif p.side == RIGHT_SIDE:
                 if p.x - p.PLAYER_WIDTH <= (self.x + self.BALL_SIZE) and (p.y + p.PLAYER_HEIGHT) > self.y > (
                         p.y - self.BALL_SIZE):
+                    p.knock += 1
                     self.v_x *= -1
                     self.v_y += p.v // 2
 
@@ -184,10 +189,8 @@ class PongGame(object):
     def get_data(self, side):
         data = []
         if side == LEFT_SIDE:
-            data = [abs(self.ball.x - self.player_left.x), abs(self.ball.y - self.player_left.y),
-                    abs(self.player_left.y - self.player_right.y)]
+            data = [abs(self.ball.x - self.player_left.x), self.player_left.y - self.ball.y]
         elif side == RIGHT_SIDE:
-            data = [abs(self.ball.x - self.player_right.x), abs(self.ball.y - self.player_right.y),
-                    abs(self.player_left.y - self.player_right.y)]
+            data = [abs(self.ball.x - self.player_right.x), self.player_right.y - self.ball.y]
 
         return data

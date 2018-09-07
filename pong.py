@@ -2,8 +2,10 @@ from commands import commands
 
 
 def core():
+
     while True:
         request = input('> ').split(' ')
+
         try:
             for c in commands:
                 if c.check(request):
