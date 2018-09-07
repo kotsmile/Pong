@@ -146,8 +146,8 @@ class Population(object):
                     if j > 50000:
                         self.game.running = False
 
-                b1.fitness = ((self.game.player_left.score**2-self.game.player_right.score)**2)*self.game.player_left.knock
-                b2.fitness = ((self.game.player_left.score-self.game.player_right.score**2)**2)*self.game.player_right.knock
+                b1.fitness = self.game.player_left.score*self.game.player_left.knock/(self.game.player_right.score + 1)
+                b2.fitness = self.game.player_right.score*self.game.player_right.knock/(self.game.player_left.score + 1)
                 i += 1
                 #print(i)
 
@@ -156,7 +156,7 @@ class Population(object):
             if self.graph:
                 demo(self.brains[0], self.brains[1], once=True)
 
-            if self.generation > 5:
+            if self.generation >= 5:
                 break
             self.next_generation()
 
@@ -165,10 +165,10 @@ class Population(object):
         self.brains.sort(key=lambda a: a.fitness, reverse=True)
 
         pong_play.play_vs_computer(self.brains[0])
-        answer = input('Save this brain?[y/n]')
+        answer = input('Save this brain?[y/n]: ')
         if answer == 'y':
-            name = input('Please write name')
-            with open(name + '.txt', 'w') as f:
+            name = input('Please write name: ')
+            with open('brains/' + name + '.txt', 'w') as f:
                 f.write(self.brains[0].get_dna())
 
 

@@ -13,7 +13,7 @@ HEIGHT = 400
 
 V = namedtuple('Coordinates', ['x', 'y'])
 
-PHEIGHT = 80
+PHEIGHT = 100
 LEFT_SIDE = V(0, HEIGHT // 2 - PHEIGHT // 2)
 RIGHT_SIDE = V(WIDTH, HEIGHT // 2 - PHEIGHT // 2)  # see position
 
@@ -98,12 +98,12 @@ class Ball(object):
     def collide(self, *players):
         for p in players:
             if p.side == LEFT_SIDE:
-                if (p.x + p.PLAYER_WIDTH) >= self.x and (p.y + p.PLAYER_HEIGHT) > self.y > (p.y - self.BALL_SIZE):
+                if (p.x + p.PLAYER_WIDTH) >= self.x >= (p.x + p.PLAYER_WIDTH - 5) and (p.y + p.PLAYER_HEIGHT) > self.y > (p.y - self.BALL_SIZE):
                     p.knock += 1
                     self.v_x *= -1
                     self.v_y += p.v // 2
             elif p.side == RIGHT_SIDE:
-                if p.x - p.PLAYER_WIDTH <= (self.x + self.BALL_SIZE) and (p.y + p.PLAYER_HEIGHT) > self.y > (
+                if p.x - p.PLAYER_WIDTH <= (self.x + self.BALL_SIZE) <= p.x - p.PLAYER_WIDTH + 5 and (p.y + p.PLAYER_HEIGHT) > self.y > (
                         p.y - self.BALL_SIZE):
                     p.knock += 1
                     self.v_x *= -1

@@ -57,7 +57,7 @@ def play_vs_computer(brain):
 
         while game.running:
 
-            action1 = brain.ask(game.get_data(pong_game.RIGHT_SIDE))
+            action1 = brain.ask(game.get_data(pong_game.LEFT_SIDE))
             action2 = pong_game.ACTION_NONE
 
             if pygame.key.get_pressed()[K_UP]:
