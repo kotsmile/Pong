@@ -144,10 +144,7 @@ def ai_master(brain):
         action1 = pong_game.ACTION_NONE
         action2 = pong_game.ACTION_NONE
 
-        if pygame.key.get_pressed()[K_w]:
-            action1 = pong_game.ACTION_UP
-        if pygame.key.get_pressed()[K_s]:
-            action1 = pong_game.ACTION_DOWN
+        action1 = brain.ask(game.get_data(pong_game.LEFT_SIDE))
         if pygame.key.get_pressed()[K_UP]:
             action2 = pong_game.ACTION_UP
         if pygame.key.get_pressed()[K_DOWN]:

@@ -4,6 +4,7 @@ import pong_game
 import pygame
 import pong_play
 from pygame.locals import *
+import numpy as np
 
 BASE = 10
 BOLD = '\033[1m'
@@ -101,20 +102,34 @@ class Brain(object):
 
     def set_dna(self, dna):
         dnaW = dna.split('I')
-        w_dna = dnaW[0].split('|')
-        b_dna = dnaW[1].split('|')
+        w_dna = list(map(decrypt, dnaW[0].split('|')))
+        print(w_dna)
+        b_dna = list(map(decrypt, dnaW[1].split('|')))
         i = 0
+        n_w = []
         for layers in self.nn.weights:
+            p = []
             for r in layers:
-                for w in r:
-                    w = decrypt(w_dna[i])
+                h = []
+                for _ in r:
+                    h.append(w_dna[i])
                     i += 1
+                p.append(h)
+            n_w.append(np.array(p))
+
         i = 0
+        n_b = []
         for layers in self.nn.biases:
+            p = []
             for r in layers:
-                for b in r:
-                    b = decrypt(b_dna[i])
+                h = []
+                for _ in r:
+                    h.append(b_dna[i])
                     i += 1
+                p.append(h)
+            n_b.append(np.array(p))
+        self.nn.weights = n_w
+        self.nn.biases = n_w
 
 
 class Population(object):
