@@ -12,6 +12,11 @@ END = '\033[0m'
 GAME = pong_game.PongGame()
 
 
+def save_brain(brain, file_name):
+    with open('brains/' + file_name + '.txt', 'w') as f:
+        f.write('l'.join(list(map(str, brain.nn.shape))) + 'R' + brain.get_dna())
+
+
 def demo(b1, b2, once=False):
     GAME.new(g=True)
 
@@ -167,8 +172,7 @@ class Population(object):
         answer = input('Save this brain?[y/n]: ')
         if answer == 'y':
             name = input('Please write name: ')
-            with open('brains/' + name + '.txt', 'w') as f:
-                f.write('l'.join(list(map(str, self.brains[0].nn.shape))) + 'R' + self.brains[0].get_dna())
+            save_brain(self.brains[0], name)
 
 
         #demo(self.brains[0], self.brains[1])
@@ -183,6 +187,7 @@ class Population(object):
 
         self.brains.sort(key=lambda a: a.fitness, reverse=True)
         self.best_brain = self.brains[0]
+        save_brain(self.best_brain, 'gen' + str(self.generation) + '_fit' + str(self.best_fitness))
 
         self.sum_of_fitness = sum(fitness_g)
 
