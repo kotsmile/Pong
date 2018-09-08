@@ -6,7 +6,7 @@ import pong_play
 from pygame.locals import *
 import numpy as np
 
-BASE = 5
+BASE = 9
 BOLD = '\033[1m'
 END = '\033[0m'
 
@@ -59,13 +59,8 @@ class Brain(object):
     def ask(self, data):
         choice = {0: pong_game.ACTION_NONE, 1: pong_game.ACTION_UP, 2: pong_game.ACTION_DOWN}
         l = self.nn.feed_forward(data)
-        m = max(l)
-        h = 100
-        for j in range(len(l)):
-            if l[j] == m:
-                h = j
 
-        return choice[h]
+        return choice[l.index(max(l))]
 
     def mutate(self, mutate_rate):
         dna = self.get_dna()
@@ -163,12 +158,12 @@ class Population(object):
 
                     self.game.next(b.ask(self.game.get_data(pong_game.LEFT_SIDE)))
                     j += 1
-                    if j > 500000:
+                    if j > 100000:
                         self.game.running = False
 
                 b.fitness = self.game.player_left.knock
                 i += 1
-                #pong_play.ai_master(b)
+                pong_play.ai_master(b)
                 print(i)
 
             self.brains.sort(key=lambda a: a.fitness, reverse=True)
@@ -208,7 +203,8 @@ class Population(object):
 
         self.fitnesses.append(self.best_fitness)
 
-        new_brains = [self.find_parent().child(self.find_parent()) for _ in range(self.size)]
+        new_brains = [self.find_parent() for _ in range(self.size)]
+        #new_brains = [self.find_parent().child(self.find_parent()) for _ in range(self.size)]
         for b in new_brains:
             b.mutate(self.mutate_rate)
 

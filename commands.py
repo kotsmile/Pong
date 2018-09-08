@@ -4,7 +4,6 @@ import pong_game
 import network
 
 
-
 class Command(object):
 
     def __init__(self, call, description, execute, param=None,ignore=False):
@@ -48,13 +47,13 @@ def quary(line):
 commands = []
 
 commands.append(Command('play', 'Start the Pong for two players', lambda p: pong_play.play(master=bool(p['-m'])), param={'-m': False}))
-commands.append(Command('genetic', 'Start genetic algorithm',
+commands.append(Command('gen', 'Start genetic algorithm',
                         lambda args: genetic.Population(int(args['-s']), pong_game.PongGame(), 100000000,
                                                         [2, int(args['-n']), 3], max_generation=int(args['-mg']),
                                                         mutate_rate=float(args['-mr']), graph=bool(args['-g'])),
                         param={'-s': 10, '-n': 10, '-mg': 5, '-mr': 0.05, '-g' : False}))
 
-commands.append((Command('s', 'short cut', lambda: quary('genetic -s 500 -n 20 -mg 20 -mr 0.08'))))
+commands.append((Command('s', 'short cut', lambda: quary('gen -s 25 -n 6 -mg 3 -mr 0.01 -g true'))))
 
 commands.append(Command('ai', 'Play vs AI', lambda p: pong_play.ai_start(p['-f']), param={'-f': None}))
 commands.append(Command('list', 'Show list of commands',
