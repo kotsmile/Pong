@@ -54,7 +54,7 @@ commands.append(Command('genetic', 'Start genetic algorithm',
                                                         mutate_rate=float(args['-mr']), graph=bool(args['-g'])),
                         param={'-s': 10, '-n': 10, '-mg': 5, '-mr': 0.05, '-g' : False}))
 
-commands.append((Command('s', 'short cut', lambda: quary('genetic -s 100 -n 20 -mg 10 -mr 0.05'))))
+commands.append((Command('s', 'short cut', lambda: quary('genetic -s 500 -n 20 -mg 20 -mr 0.08'))))
 
 commands.append(Command('ai', 'Play vs AI', lambda p: pong_play.ai_start(p['-f']), param={'-f': None}))
 commands.append(Command('list', 'Show list of commands',

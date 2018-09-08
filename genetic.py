@@ -149,7 +149,7 @@ class Population(object):
                 b.fitness = self.game.player_left.knock
                 i += 1
                 #pong_play.ai_master(b)
-                #print(i)
+                print(i)
 
             self.brains.sort(key=lambda a: a.fitness, reverse=True)
             if self.graph:
