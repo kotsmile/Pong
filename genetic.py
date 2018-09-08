@@ -114,8 +114,9 @@ class Brain(object):
 
 class Population(object):
 
-    def __init__(self, size, game, goal, shape, mutate_rate=0.05, graph=False):
+    def __init__(self, size, game, goal, shape, max_generation=10, mutate_rate=0.05, graph=False):
 
+        self.max_generation = max_generation
         self.graph = graph
         self.size = size
         self.mutate_rate = mutate_rate
@@ -132,31 +133,29 @@ class Population(object):
 
         while self.best_fitness <= self.goal:
             i = 0
-            for b1, b2 in zip(self.brains, self.brains[::-1]):
+            for b in self.brains:
 
-                self.game.new()
+                self.game.new(master=True)
+
 
                 j = 0
                 while self.game.running:
 
-                    data_left = self.game.get_data(pong_game.LEFT_SIDE)
-                    data_right = self.game.get_data(pong_game.RIGHT_SIDE)
-                    self.game.next(b1.ask(data_left), b2.ask(data_right))
+                    self.game.next(b.ask(self.game.get_data(pong_game.LEFT_SIDE)))
                     j += 1
-                    if j > 50000:
+                    if j > 500000:
                         self.game.running = False
 
-                b1.fitness = self.game.player_left.score*self.game.player_left.knock/(self.game.player_right.score + 1)
-                b2.fitness = self.game.player_right.score*self.game.player_right.knock/(self.game.player_left.score + 1)
+                b.fitness = self.game.player_left.knock
                 i += 1
+                #pong_play.ai_master(b)
                 #print(i)
 
             self.brains.sort(key=lambda a: a.fitness, reverse=True)
-            print('demo')
             if self.graph:
-                demo(self.brains[0], self.brains[1], once=True)
+                demo(self.brains[0], self.brains[0], once=True)
 
-            if self.generation >= 5:
+            if self.generation >= self.max_generation:
                 break
             self.next_generation()
 
@@ -169,7 +168,7 @@ class Population(object):
         if answer == 'y':
             name = input('Please write name: ')
             with open('brains/' + name + '.txt', 'w') as f:
-                f.write(self.brains[0].get_dna())
+                f.write('l'.join(list(map(str, self.brains[0].nn.shape))) + 'R' + self.brains[0].get_dna())
 
 
         #demo(self.brains[0], self.brains[1])
@@ -179,7 +178,7 @@ class Population(object):
         self.generation += 1
 
         fitness_g = [b.fitness for b in self.brains]
-        self.delta = max(fitness_g) - self.best_fitness
+        delta = max(fitness_g) - self.best_fitness
         self.best_fitness = max(fitness_g)
 
         self.brains.sort(key=lambda a: a.fitness, reverse=True)
@@ -194,7 +193,7 @@ class Population(object):
             b.mutate(self.mutate_rate)
 
         self.brains = new_brains
-        self.info()
+        self.info(delta)
 
     def find_parent(self):
 
@@ -208,11 +207,11 @@ class Population(object):
             if sum_of_fitness >= pick:
                 return b
 
-    def info(self):
+    def info(self, delta):
         print('\n')
         print('+--------------' + BOLD + 'INFO' + END + '--------------+')
         print(BOLD + 'GENERATION: ' + END + str(self.generation))
         print(BOLD + 'BEST FITNESS: ' + END + str(max(self.fitnesses)))
         print(BOLD + 'FITNESS: ' + END + str(self.best_fitness))
-        print(BOLD + 'DELTA: ' + END + str(self.delta))
+        print(BOLD + 'DELTA: ' + END + str(delta))
         print('+--------------------------------+')

@@ -16,6 +16,7 @@ V = namedtuple('Coordinates', ['x', 'y'])
 PHEIGHT = 100
 LEFT_SIDE = V(0, HEIGHT // 2 - PHEIGHT // 2)
 RIGHT_SIDE = V(WIDTH, HEIGHT // 2 - PHEIGHT // 2)  # see position
+SUPER_RIGHT_SIDE = V(WIDTH, 0)
 
 ACTION_NONE = 'none'
 ACTION_UP = 'up'
@@ -69,6 +70,30 @@ class Player(object):
             draw_rect(surface, BLACK, self.x - self.PLAYER_WIDTH, self.y, self.x, self.y + self.PLAYER_HEIGHT)
 
 
+class SuperPlayer(object):
+    PLAYER_WIDTH = 10
+    PLAYER_HEIGHT = HEIGHT
+    PLAYER_VELOCITY = 10
+
+    def __init__(self):
+        self.side = SUPER_RIGHT_SIDE
+        self.x = self.side.x
+        self.y = self.side.y
+        self.v = self.PLAYER_VELOCITY
+        self.score = 0
+
+    def restart(self):
+        score = self.score
+        self.__init__()
+        self.score = score
+
+    def move(self, a):
+        pass
+
+    def draw(self, surface):
+        draw_rect(surface, BLACK, self.x - self.PLAYER_WIDTH, self.y, self.x, self.y + self.PLAYER_HEIGHT)
+
+
 class Ball(object):
     BALL_VELOCITY = 5
     BALL_SIZE = 15
@@ -108,6 +133,10 @@ class Ball(object):
                     p.knock += 1
                     self.v_x *= -1
                     self.v_y += p.v // 2
+            elif p.side == SUPER_RIGHT_SIDE:
+                if p.x -p.PLAYER_WIDTH <= self.x + self.BALL_SIZE <= p.x - p.PLAYER_WIDTH + 5:
+                    self.v_x *= -1
+                    self.v_y += p.v // 2
 
         if self.y + self.BALL_SIZE >= HEIGHT or self.y <= 0:
             self.v_y *= -1
@@ -121,12 +150,15 @@ class PongGame(object):
     def __init__(self):
         self.shape = [3, 20, 3]
 
-    def new(self, g=False):
+    def new(self, g=False, master=False):
         self.player_left = Player(LEFT_SIDE)
         self.player_right = Player(RIGHT_SIDE)
         self.ball = Ball(LEFT_SIDE)
         self.timer = 0
         self.running = True
+        self.master = master
+        if self.master:
+            self.player_right = SuperPlayer()
         self.end_score = 7
         self.g = g
         if self.g:
@@ -159,7 +191,7 @@ class PongGame(object):
         pygame.display.flip()
         pygame.display.update()
 
-    def next(self, a1, a2):
+    def next(self, a1, a2=None):
 
         if self.g:
             self.draw()
@@ -167,7 +199,9 @@ class PongGame(object):
         self.timer += 1
         self.ball.collide(self.player_left, self.player_right)
         self.player_left.move(a1)
-        self.player_right.move(a2)
+        if a2:
+            self.player_right.move(a2)
+
         self.ball.move()
 
         if self.ball.goal != 0:
